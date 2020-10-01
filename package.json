@@ -4,7 +4,7 @@
   "description": "Parse BibTeX entries into JavaScript objects (and back) including processing of basic LaTeX in entry fields.",
   "author": "Ignacio X. Domínguez",
   "license": "MIT",
-  "main": "dist/bib-parser.js",
+  "main": "src/index.js",
   "module": "src/index.js",
   "scripts": {
     "build": "webpack --mode=production",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ignacioxd/bib-parser.git"
+    "url": "https://github.com/codetrick/bib-parser.git"
   },
   "keywords": [
     "LaTeX",
@@ -22,9 +22,9 @@
     "JSON"
   ],
   "bugs": {
-    "url": "https://github.com/ignacioxd/bib-parser/issues"
+    "url": "https://github.com/codetrick/bib-parser/issues"
   },
-  "homepage": "https://github.com/ignacioxd/bib-parser#readme",
+  "homepage": "https://github.com/codetrick/bib-parser#readme",
   "peerDependencies": {},
   "dependencies": {
     "latex-to-unicode-converter": "^0.5.2"
