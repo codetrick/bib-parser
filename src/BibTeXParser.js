@@ -66,7 +66,11 @@ export default class BibTeXParser {
     } else {
       throw Error("Token mismatch, expected " + s + ", found " + this.input.substring(this.pos));
     }
-    this.skipWhitespace();
+    if (s === '{') {
+        this.skipWhitespace(false);
+    } else {
+        this.skipWhitespace();
+    }
   }
 
   tryMatch(s) {
@@ -78,11 +82,11 @@ export default class BibTeXParser {
     }
   }
 
-  skipWhitespace() {
+  skipWhitespace(skipComment=true) {
     while (this.isWhitespace(this.input[this.pos])) {
       this.pos++;
     }
-    if (this.input[this.pos] === "%") {
+    if (skipComment && this.input[this.pos] === "%") {
       while(this.input[this.pos] !== "\n") {
         this.pos++;
       }
@@ -155,14 +159,13 @@ export default class BibTeXParser {
     return values.join("");
   }
 
-  key() {
+  key(allowDollar=false) {
     let start = this.pos;
     while(true) {
       if (this.pos === this.input.length) {
         throw Error("Runaway key");
       }
-    
-      if (this.input[this.pos].match("[a-zA-Z0-9_:\\./-]")) {
+      if (this.input[this.pos].match("[" + "a-zA-Z\u00C0-\u017F0-9_:\\?\\./" + (allowDollar ? "\\$" : "") + "-]")) {
         this.pos++
       } else {
         return this.input.substring(start, this.pos);//ignacioxd.toUpperCase();
@@ -219,7 +222,7 @@ export default class BibTeXParser {
         }
         else {
           let currentAuthor = authors[i].split(",");
-          let name = currentAuthor[1].trim() + " " + currentAuthor[0].trim();
+          let name = {firstName: currentAuthor[1].trim(), lastName: currentAuthor[0].trim()};
           authorList.push( name );
         }
       }
@@ -230,7 +233,14 @@ export default class BibTeXParser {
   }
 
   entry_body(d) {
-    this.currentEntry = this.key();
+    this.currentEntry = this.key(true);
+    if (this.currentEntry in this.entries) {
+        let count = 2;
+        while (this.currentEntry + "_" + count.toString() in this.entries) {
+            count += 1;
+        }
+        this.currentEntry += "_" + count.toString()
+    }
     this.entries[this.currentEntry] = { entryType: d.substring(1), entryKey: this.currentEntry };
     this.match(",");
     this.key_value_list();
