@@ -280,8 +280,10 @@ export default class BibTeXParser {
     this.entry_body(d);
   }
 
-  bibtex() {
-    while(this.tryMatch("@")) {
+  match_one_entry() {
+    if (!this.tryMatch("@"))
+      return false
+    else {
       let d = this.directive().toLowerCase();
       this.match("{");
       if (d === "@string") {
@@ -294,15 +296,33 @@ export default class BibTeXParser {
         this.entry(d);
       }
       this.match("}");
+      return true;
+    }
+  }
+
+  async bibtex(progress_callback) {
+
+    while (this.match_one_entry()) {
+
+      if (typeof progress_callback === "function") {
+        progress_callback({count: Object.keys(this.entries).length, status: "running"});
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+
+    if (typeof progress_callback === "function") {
+      progress_callback({count: Object.keys(this.entries).length, status: "done"});
     }
 
     this.entries['@comments'] = this.comments;
+
   }
 }
 
-export const parseString = (string, asObject = false) => {
+export const parseString = async (string, asObject = false, progress_callback=undefined) => {
   const parser = new BibTeXParser(string);
-  parser.bibtex();
+  await parser.bibtex(progress_callback);
   delete parser.entries["@comments"];
   return asObject ? parser.entries : Object.keys(parser.entries).map(key => parser.entries[key]);
 };
